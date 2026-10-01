@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1B231F">
+<title>Coup de shaker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Limelight&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sheet:#F6F2EA;
+  --sheet-ink:#1F1A15;
+  --sheet-muted:#6A5F50;
+  --sheet-line:rgba(31,26,21,.12);
+  --chip:#EAE3D5;
+  --wall:#1B231F;
+  --wall-2:#24302A;
+  --wood:#5B3A22;
+  --wood-hi:#7A5133;
+  --wood-dark:#3A2414;
+  --steel:#9AA3A8;
+  --steel-dark:#5E676C;
+  --brass:#C8923A;
+  --brass-hi:#E7B868;
+  --cream:#F3EAD8;
+  --cream-dim:#BDB2A0;
+  --lcd:#0F1A12;
+  --lcd-on:#7CF29A;
+  --red:#E3263F;
+  --red-deep:#8E0F22;
+  --gold:#F2C84B;
+  --ok:#69C26B;
+  --glass-line:rgba(235,245,250,.85);
+  --display:"Limelight","Georgia",serif;
+  --cond:"Barlow Condensed","Arial Narrow",sans-serif;
+  --body:"Barlow","Segoe UI",system-ui,-apple-system,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --sheet:#211A13;--sheet-ink:#F1E8D8;--sheet-muted:#B7A891;--sheet-line:rgba(241,232,216,.12);--chip:#30271D;
+  }
+}
+:root[data-theme="dark"]{--sheet:#211A13;--sheet-ink:#F1E8D8;--sheet-muted:#B7A891;--sheet-line:rgba(241,232,216,.12);--chip:#30271D}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0;overscroll-behavior:none}
+body{background:#0C0F0D;color:var(--cream);font-family:var(--body);font-size:15px;line-height:1.4;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:none;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button,.noselect{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+:focus-visible{outline:3px solid var(--brass-hi);outline-offset:2px}
+
+#app{position:relative;max-width:430px;height:100%;margin:0 auto;display:flex;flex-direction:column;overflow:hidden;background:var(--wall)}
+
+/* Bandeau : caisse, chrono, série */
+.hud{display:flex;align-items:center;gap:10px;padding:8px 12px 6px;background:#121815}
+.till{display:flex;flex-direction:column;align-items:flex-start;background:var(--lcd);border:2px solid #2B3A2F;border-radius:8px;padding:2px 10px 3px;min-width:118px}
+.till small{font-family:var(--cond);font-size:11px;color:#5F8C68;line-height:1}
+.till b{font-family:var(--cond);font-weight:700;font-size:22px;line-height:1.05;color:var(--lcd-on);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.till.neg b{color:var(--red)}
+.till.flash{animation:flash .5s 3}
+@keyframes flash{50%{background:#3A0A12}}
+.hud .timer{font-family:var(--cond);font-weight:600;font-size:18px;font-variant-numeric:tabular-nums;color:var(--cream-dim)}
+.hud .streak{font-family:var(--cond);font-weight:700;font-size:17px;color:var(--brass-hi)}
+.hud .spacer{flex:1}
+.fiche-btn{font-family:var(--cond);font-weight:600;font-size:15px;border:1.5px solid var(--cream-dim);border-radius:999px;padding:4px 10px;color:var(--cream)}
+
+/* Le client */
+.ticket{display:flex;align-items:center;gap:10px;padding:8px 12px;background:linear-gradient(#121815,var(--wall))}
+.ticket .face{font-size:30px;line-height:1}
+.bubble{position:relative;background:var(--cream);color:#1F1A15;border-radius:14px;padding:7px 12px;font-family:var(--cond);font-weight:600;font-size:18px;line-height:1.15}
+.bubble::before{content:"";position:absolute;left:-6px;top:50%;margin-top:-6px;border:6px solid transparent;border-right-color:var(--cream);border-left:0}
+
+/* La scène */
+.scene{flex:1;display:flex;flex-direction:column;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.backbar{position:relative;display:block;width:100%;height:132px;flex:none;background:
+  linear-gradient(180deg,rgba(255,255,255,.04),transparent 40%),var(--wall-2);border-bottom:4px solid var(--wood-dark);text-align:left}
+.shelf{position:absolute;left:10px;right:10px;height:56px;display:flex;align-items:flex-end;gap:3px;padding:0 4px;border-bottom:4px solid var(--brass);box-shadow:0 3px 0 rgba(0,0,0,.35)}
+.shelf.s1{top:6px}.shelf.s2{top:68px}
+.btl{flex:1;max-width:16px;border-radius:5px 5px 2px 2px;position:relative;opacity:.92}
+.btl::before{content:"";position:absolute;left:30%;right:30%;top:-9px;height:10px;background:inherit;border-radius:2px 2px 0 0;filter:brightness(.8)}
+.btl::after{content:"";position:absolute;left:18%;right:18%;top:40%;height:26%;background:rgba(243,234,216,.75);border-radius:1px}
+.zone-tag{position:absolute;font-family:var(--cond);font-weight:600;font-size:13px;color:var(--cream);background:rgba(0,0,0,.55);border-radius:999px;padding:2px 9px;pointer-events:none}
+.backbar .zone-tag{right:12px;bottom:6px}
+
+.counter{position:relative;flex:none;display:grid;grid-template-columns:62px 1fr 62px;align-items:end;gap:6px;padding:8px 8px 0;
+  background:linear-gradient(180deg,#26332C 0,#26332C 72%,var(--wood-hi) 72%,var(--wood) 80%,var(--wood-dark) 100%);min-height:214px}
+.side-zone{display:flex;flex-direction:column;align-items:center;gap:3px;padding-bottom:30px;font-family:var(--cond);font-size:12.5px;font-weight:600;color:var(--cream)}
+.side-zone svg{width:52px;height:56px}
+.work{display:flex;align-items:flex-end;justify-content:center;gap:10px;padding-bottom:22px;min-height:206px}
+.slot{display:flex;flex-direction:column;align-items:center;gap:2px}
+.slot svg{display:block}
+.gsvg{width:96px;height:124px}
+.vsvg{width:70px;height:112px}
+.ssvg{width:40px;height:52px}
+.slot .lbl{font-family:var(--cond);font-size:12.5px;font-weight:600;color:var(--cream);text-align:center;line-height:1.1;max-width:120px}
+.slot .st{font-size:11px;color:var(--cream-dim);text-align:center;line-height:1.15;max-width:130px}
+.empty-slot{width:96px;height:124px;border:2px dashed rgba(243,234,216,.25);border-radius:10px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:var(--cond);font-size:14px;color:var(--cream-dim);padding:8px}
+.shaking{animation:shake .12s infinite}
+@keyframes shake{0%{transform:translate(0,0) rotate(-6deg)}50%{transform:translate(0,-6px) rotate(6deg)}100%{transform:translate(0,0) rotate(-6deg)}}
+.tools-on{position:absolute;left:70px;right:70px;bottom:3px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+.tools-on span{font-family:var(--cond);font-size:11.5px;font-weight:600;background:rgba(0,0,0,.45);color:var(--brass-hi);border-radius:999px;padding:1px 7px}
+
+/* Actions contextuelles */
+.actions{flex:none;display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;background:var(--wood-dark);min-height:50px;align-items:center}
+.act{font-family:var(--cond);font-weight:600;font-size:15px;background:var(--cream);color:#1F1A15;border-radius:999px;padding:7px 12px;line-height:1.1}
+.act small{font-weight:500;font-size:12px;color:#7A6B57}
+.act:disabled{background:rgba(243,234,216,.22);color:rgba(243,234,216,.7);cursor:not-allowed}
+.act:disabled small{color:rgba(243,234,216,.55)}
+.act.hold{background:var(--brass-hi)}
+.act.hold.on{background:var(--gold);box-shadow:0 0 0 3px rgba(242,200,75,.35)}
+.actions .none{font-size:13px;color:var(--cream-dim)}
+
+/* Sous le comptoir */
+.under{flex:none;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 8px 10px;background:linear-gradient(#4A2F1B,#3A2414)}
+.cab{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px 5px;border-radius:8px;background:rgba(0,0,0,.22);box-shadow:inset 0 0 0 1.5px rgba(200,146,58,.35);font-family:var(--cond);font-weight:600;font-size:13px;color:var(--cream);line-height:1.1;text-align:center}
+.cab svg{width:44px;height:40px}
+.cab:active{transform:scale(.97)}
+
+footer.bar{flex:none;display:flex;gap:8px;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));background:#121815}
+.serve{flex:1;font-family:var(--display);font-size:22px;background:var(--brass);color:#1F1A15;border-radius:14px;padding:10px 0}
+.restart{font-family:var(--cond);font-weight:600;font-size:15px;color:var(--cream-dim);border:1.5px solid rgba(243,234,216,.3);border-radius:14px;padding:0 12px}
+
+/* Feuilles (étagères, placards…) */
+.sheet-back{position:absolute;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;z-index:20}
+.sheet-back.open{display:flex}
+.sheet{background:var(--sheet);color:var(--sheet-ink);width:100%;max-height:78%;border-radius:18px 18px 0 0;display:flex;flex-direction:column;padding:14px 14px calc(12px + env(safe-area-inset-bottom,0px))}
+.sheet header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sheet h2{font-family:var(--display);font-weight:400;font-size:24px;margin:0;line-height:1.1}
+.sheet .x{font-size:28px;line-height:1;color:var(--sheet-muted);padding:0 4px}
+.sheet .body{overflow-y:auto;-webkit-overflow-scrolling:touch}
+.grp{margin:10px 0 4px;font-family:var(--cond);font-weight:700;font-size:16px;color:var(--sheet-muted)}
+.items{display:flex;flex-wrap:wrap;gap:6px}
+.item{display:flex;align-items:center;gap:6px;background:var(--chip);color:var(--sheet-ink);border-radius:10px;padding:7px 10px;font-size:14.5px;line-height:1.15;text-align:left}
+.item .dot{width:10px;height:22px;border-radius:3px 3px 2px 2px;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.item svg{width:22px;height:28px;flex:none}
+.item.on{background:var(--brass);color:#1F1A15}
+.sheet .hint{font-size:13px;color:var(--sheet-muted);margin:2px 0 4px}
+
+/* La main : verser, doser */
+.hand{position:absolute;left:0;right:0;bottom:0;z-index:15;background:var(--sheet);color:var(--sheet-ink);border-radius:18px 18px 0 0;padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 30px rgba(0,0,0,.45);display:none}
+.hand.open{display:block}
+.hand .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.hand h3{font-family:var(--cond);font-weight:700;font-size:21px;margin:0;line-height:1.1}
+.hand .from{font-size:12.5px;color:var(--sheet-muted)}
+.targets{display:flex;gap:6px;margin:10px 0 8px}
+.targets button{flex:1;font-family:var(--cond);font-weight:600;font-size:15px;border:1.5px solid var(--sheet-line);border-radius:10px;padding:6px 4px;color:var(--sheet-ink)}
+.targets button[aria-pressed="true"]{background:var(--sheet-ink);color:var(--sheet)}
+.hand .ctrls{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+.pour{flex:1 1 100%;font-family:var(--cond);font-weight:700;font-size:20px;background:var(--brass);color:#1F1A15;border-radius:14px;padding:14px 8px;line-height:1.1}
+.pour.on{background:var(--gold);box-shadow:0 0 0 4px rgba(242,200,75,.35)}
+.pour small{display:block;font-weight:500;font-size:13px}
+.mini{flex:1;font-family:var(--cond);font-weight:600;font-size:16px;background:var(--chip);color:var(--sheet-ink);border-radius:12px;padding:10px 6px}
+.hand .tally{font-size:13.5px;color:var(--sheet-muted);margin-top:8px}
+
+/* Toast */
+.toast{position:absolute;left:50%;top:116px;transform:translateX(-50%);z-index:30;background:rgba(15,20,17,.94);color:var(--cream);font-size:14px;border-radius:10px;padding:7px 12px;max-width:88%;text-align:center;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.toast.warn{color:#FFB3BD}
+
+/* Écrans : départ, fiche, résultat */
+.screen{position:absolute;inset:0;z-index:40;display:none;flex-direction:column;overflow-y:auto;padding:calc(18px + env(safe-area-inset-top,0px)) 18px calc(18px + env(safe-area-inset-bottom,0px))}
+.screen.open{display:flex}
+#start{background:radial-gradient(120% 70% at 50% 0%,#2C3A33 0,var(--wall) 55%,#0E1310 100%)}
+#start h1{font-family:var(--display);font-weight:400;font-size:52px;line-height:.95;margin:28px 0 6px;color:var(--brass-hi)}
+#start .lead{font-size:16px;color:var(--cream);max-width:34ch;margin:0 0 16px}
+#start ul{padding-left:18px;margin:0 0 16px;color:var(--cream-dim);font-size:14.5px}
+#start li{margin-bottom:6px}
+#start .stats{display:flex;gap:16px;margin:4px 0 18px;font-family:var(--cond);font-size:15px;color:var(--cream-dim)}
+#start .stats b{display:block;font-size:24px;color:var(--cream)}
+.big{font-family:var(--display);font-size:24px;background:var(--brass);color:#1F1A15;border-radius:14px;padding:14px 0;width:100%;margin-top:auto}
+
+#fiche{background:rgba(10,13,11,.96)}
+#fiche .card{background:#22302A;border:6px solid #5A3D22;border-radius:6px;padding:16px;color:#ECEAE2}
+#fiche h2{font-family:var(--display);font-weight:400;font-size:30px;margin:0 0 4px}
+#fiche .meta{color:#B9BDB4;font-size:14px;margin-bottom:10px}
+#fiche ol,#fiche ul{margin:0 0 10px;padding-left:20px}
+#fiche li{font-family:var(--cond);font-size:18px;font-weight:500}
+#fiche p{font-size:14.5px;margin:0 0 8px}
+#fiche .warn{background:rgba(227,38,63,.12);border:1.5px solid var(--red);color:#FFC4CC;border-radius:10px;padding:12px;font-size:15px;margin-bottom:12px}
+.row2{display:flex;gap:8px;margin-top:12px}
+.row2 button{flex:1;font-family:var(--cond);font-weight:700;font-size:18px;border-radius:12px;padding:12px 0}
+.b-light{background:var(--cream);color:#1F1A15}
+.b-ghost{border:1.5px solid rgba(243,234,216,.4)!important;color:var(--cream)}
+
+#result{background:rgba(8,10,9,.9)}
+#result.fail{background:radial-gradient(circle at 50% 30%,rgba(142,15,34,.75),rgba(25,0,6,.96) 70%);animation:redpulse 1s infinite alternate}
+@keyframes redpulse{to{background-color:rgba(60,0,10,.4)}}
+#result.fail .rcard{animation:quake .5s 2}
+@keyframes quake{0%,100%{transform:translate(0)}20%{transform:translate(-8px,3px) rotate(-1deg)}40%{transform:translate(7px,-4px) rotate(1deg)}60%{transform:translate(-6px,2px)}80%{transform:translate(5px,-2px)}}
+.rcard{position:relative;margin-top:24px}
+.verdict{font-family:var(--display);font-weight:400;font-size:38px;line-height:1;margin:0 0 6px}
+#result.tip .verdict{color:var(--gold)}
+#result.ok .verdict{color:var(--ok)}
+#result.fail .verdict{color:#FF5468;text-shadow:0 0 18px rgba(255,40,70,.6)}
+.money{font-family:var(--cond);font-weight:700;font-size:30px;font-variant-numeric:tabular-nums;margin:6px 0 2px}
+.money.neg{color:#FF5468}
+.money.pos{color:var(--lcd-on)}
+.money.gold{color:var(--gold);font-size:36px;text-shadow:0 0 16px rgba(242,200,75,.5)}
+.scrawl{position:absolute;font-family:var(--cond);font-weight:700;color:#FF2D4A;text-transform:none;pointer-events:none;text-shadow:0 0 10px rgba(255,0,40,.5);animation:jitter .18s infinite}
+@keyframes jitter{50%{transform:translate(1px,-1px) rotate(var(--r,0deg))}}
+.errs{margin:14px 0 0;padding:0;list-style:none}
+.errs li{padding:8px 0 8px 26px;border-bottom:1px solid rgba(243,234,216,.12);position:relative;font-size:15px}
+.errs li::before{content:"✗";position:absolute;left:4px;top:7px;font-weight:700;color:#FF6B7D}
+.errs li.f::before{content:"✗✗";left:0;font-size:13px;top:9px}
+.errs li.f{color:#FFC4CC;font-weight:600}
+.errs li.good::before{content:"✓";color:var(--ok)}
+.errs-title{font-family:var(--cond);font-weight:700;font-size:18px;margin-top:16px;color:var(--cream-dim)}
+.coin{position:absolute;top:-40px;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF2B0,#F2C84B 45%,#B8861C 100%);box-shadow:inset 0 0 0 2px rgba(120,80,10,.45);display:flex;align-items:center;justify-content:center;font-family:var(--cond);font-weight:700;font-size:14px;color:#7A5208;animation:fall linear forwards;z-index:41;pointer-events:none}
+.bill{position:absolute;top:-60px;width:54px;height:28px;border-radius:3px;background:linear-gradient(135deg,#7FC48A,#3E8E50);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-family:var(--cond);font-weight:700;font-size:13px;color:#EFFFF0;animation:fall linear forwards;z-index:41;pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(var(--spin,360deg))}}
+.sparkle{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 25%,rgba(242,200,75,.35),transparent 60%);animation:glow 1.2s ease-out}
+@keyframes glow{from{opacity:0}30%{opacity:1}to{opacity:.4}}
+
+@media (max-height:700px){.backbar{height:112px}.shelf{height:46px}.shelf.s2{top:58px}.counter{min-height:196px}.work{min-height:188px}.gsvg{width:84px;height:108px}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="hud">
+    <div class="till" id="till"><small>Caisse</small><b id="cash">0,00 €</b></div>
+    <span class="timer" id="timer">0:00</span>
+    <span class="spacer"></span>
+    <span class="streak" id="streak" title="Série de cocktails parfaits"></span>
+    <button class="fiche-btn" id="ficheBtn">Fiche</button>
+  </div>
+  <div class="ticket"><span class="face" id="face">🧔</span><div class="bubble" id="order">…</div></div>
+
+  <div class="scene" id="scene">
+    <button class="backbar" data-zone="backbar" aria-label="Ouvrir l'étagère arrière">
+      <div class="shelf s1" id="shelf1"></div>
+      <div class="shelf s2" id="shelf2"></div>
+      <span class="zone-tag">Étagère arrière</span>
+    </button>
+
+    <div class="counter">
+      <button class="side-zone" data-zone="plan" aria-label="Ouvrir le plan de travail">
+        <svg viewBox="0 0 60 60"><rect x="4" y="34" width="52" height="16" rx="4" fill="#B98552" stroke="#7A5133" stroke-width="2"/><circle cx="20" cy="30" r="9" fill="#E9DB4A" stroke="#A39420" stroke-width="2"/><circle cx="38" cy="31" r="7" fill="#8BC34A" stroke="#4E7A22" stroke-width="2"/><rect x="44" y="12" width="9" height="22" rx="3" fill="#F4E9D2" stroke="#A88C5C" stroke-width="2"/></svg>
+        Plan de travail
+      </button>
+      <div class="work" id="work"></div>
+      <button class="side-zone" data-zone="cafe" aria-label="Ouvrir la machine à café">
+        <svg viewBox="0 0 60 60"><rect x="8" y="6" width="44" height="22" rx="4" fill="#A9B1B6" stroke="#5E676C" stroke-width="2"/><rect x="22" y="28" width="16" height="8" fill="#5E676C"/><rect x="10" y="44" width="40" height="6" rx="2" fill="#5E676C"/><path d="M24 38h12v6H24z" fill="#F3EAD8"/><circle cx="16" cy="17" r="3" fill="#E3263F"/><circle cx="44" cy="17" r="3" fill="#7CF29A"/></svg>
+        Machine à café
+      </button>
+      <div class="tools-on" id="toolsOn"></div>
+    </div>
+
+    <div class="actions" id="actions"></div>
+
+    <div class="under">
+      <button class="cab" data-zone="frigo"><svg viewBox="0 0 50 44"><rect x="3" y="3" width="44" height="38" rx="4" fill="#B8C0C4" stroke="#5E676C" stroke-width="2"/><rect x="8" y="8" width="34" height="22" rx="2" fill="#2E4650"/><rect x="12" y="14" width="5" height="14" rx="2" fill="#F7A531"/><rect x="20" y="12" width="5" height="16" rx="2" fill="#C0301E"/><rect x="28" y="15" width="5" height="13" rx="2" fill="#F3E3A2"/><rect x="36" y="13" width="4" height="15" rx="2" fill="#D7EA9A"/><rect x="18" y="34" width="14" height="3" rx="1.5" fill="#5E676C"/></svg>Réfrigérateur</button>
+      <button class="cab" data-zone="glace"><svg viewBox="0 0 50 44"><path d="M4 14h42l-4 26H8z" fill="#9AA3A8" stroke="#5E676C" stroke-width="2"/><rect x="11" y="7" width="9" height="9" rx="2" fill="#E3F4FB" stroke="#9CC9DA"/><rect x="21" y="5" width="9" height="9" rx="2" fill="#E3F4FB" stroke="#9CC9DA"/><rect x="31" y="8" width="8" height="8" rx="2" fill="#E3F4FB" stroke="#9CC9DA"/></svg>Bac à glace</button>
+      <button class="cab" data-zone="verres"><svg viewBox="0 0 50 44"><rect x="3" y="3" width="44" height="38" rx="3" fill="#6E4B2A" stroke="#3A2414" stroke-width="2"/><rect x="7" y="7" width="36" height="30" fill="#33423B"/><path d="M12 12h8c0 6-2 8-4 8s-4-2-4-8zM16 20v8M13 29h6" stroke="#DDEFF5" stroke-width="1.5" fill="none"/><path d="M26 14h8l-1 15h-6z" stroke="#DDEFF5" stroke-width="1.5" fill="none"/><path d="M37 12h3l-.5 8a1 1 0 0 1-2 0zM38.5 21v6" stroke="#DDEFF5" stroke-width="1.5" fill="none"/></svg>Placard à verres</button>
+      <button class="cab" data-zone="garnitures"><svg viewBox="0 0 50 44"><rect x="3" y="10" width="44" height="26" rx="4" fill="#9AA3A8" stroke="#5E676C" stroke-width="2"/><circle cx="12" cy="23" r="5" fill="#C8102E"/><circle cx="22" cy="23" r="5" fill="#8BC34A"/><circle cx="32" cy="23" r="5" fill="#F7A531"/><circle cx="41" cy="23" r="4" fill="#6B8E23"/></svg>Bac à garnitures</button>
+      <button class="cab" data-zone="outils"><svg viewBox="0 0 50 44"><rect x="2" y="36" width="46" height="4" rx="2" fill="#C8923A"/><path d="M8 34l2-22h8l2 22z" fill="#B8C0C4" stroke="#5E676C" stroke-width="1.5"/><path d="M26 6v28" stroke="#B8C0C4" stroke-width="2"/><ellipse cx="26" cy="33" rx="2.5" ry="3" fill="#B8C0C4"/><path d="M34 14h6l-2 8h-2z M36 22h2l2 12h-6z" fill="#B8C0C4" stroke="#5E676C" stroke-width="1"/><rect x="42" y="10" width="4" height="24" rx="2" fill="#7A5133"/></svg>Rail à outils</button>
+      <button class="cab" data-zone="service"><svg viewBox="0 0 50 44"><path d="M15 18h20l-2 22H17z" fill="#C8923A" stroke="#7A5133" stroke-width="2"/><path d="M20 18L17 4M25 18V3M30 18l4-13" stroke="#E3263F" stroke-width="2.5" stroke-linecap="round"/><path d="M27 18l7-10" stroke="#F3EAD8" stroke-width="2" stroke-linecap="round"/></svg>Pot de service</button>
+    </div>
+  </div>
+
+  <footer class="bar">
+    <button class="restart" id="restartBtn">Recommencer</button>
+    <button class="serve" id="serveBtn">Servir</button>
+  </footer>
+
+  <div class="sheet-back" id="sheetBack">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+      <header><h2 id="sheetTitle"></h2><button class="x" id="sheetClose" aria-label="Fermer">×</button></header>
+      <div class="body" id="sheetBody"></div>
+    </div>
+  </div>
+
+  <div class="hand" id="hand" role="dialog" aria-label="Ingrédient en main"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <section class="screen open" id="start">
+    <h1>Coup de shaker</h1>
+    <p class="lead">Un client s'installe au comptoir et commande un cocktail du socle. À vous de le servir dans les règles de l'art.</p>
+    <ul>
+      <li>Touchez les étagères, le réfrigérateur, les placards et le rail pour prendre ce dont vous avez besoin.</li>
+      <li>Maintenez le doigt appuyé pour verser : 1,5 cl par seconde.</li>
+      <li>Mirez le verre (il peut être sale), rafraîchissez-le, frappez au shaker, passez, garnissez.</li>
+      <li>Bons ingrédients : le client paie. Tout parfait, dans l'ordre et bien dosé : il laisse un pourboire.</li>
+      <li>La fiche technique est consultable, mais elle coûte le pourboire.</li>
+    </ul>
+    <div class="stats" id="startStats"></div>
+    <button class="big" id="startBtn">Ouvrir le bar</button>
+  </section>
+
+  <section class="screen" id="fiche" aria-labelledby="ficheTitle"></section>
+  <section class="screen" id="result" aria-live="assertive"></section>
+</div>
+
+<script>
+/* =========================================================
+   INVENTAIRE DU BAR (uniquement les éléments du socle)
+   ========================================================= */
+const ZONES = {
+  backbar:{label:"Étagère arrière",groups:[
+    ["Gin","liquid",["Gin"]],
+    ["Vodka","liquid",["Vodka","Vodka vanille"]],
+    ["Rhum","liquid",["Ron cubain 3 años","Ron cubain","Rhum blanc","Rhum agricole blanc","Rhum agricole ambré","Rhum vieux agricole","Rhum vieux jamaïcain","Rum ambré","Black rum"]],
+    ["Tequila","liquid",["Tequila","Tequila blanco 100 % agave"]],
+    ["Whisky","liquid",["Whiskey américain","Bourbon","Rye whiskey","Scotch whisky","Blend whisky","Whisky tourbé"]],
+    ["Cognac","liquid",["Cognac","Calvados"]],
+    ["Autres eaux-de-vie","liquid",["Cachaça","Pisco"]],
+    ["Vermouths","liquid",["Vermouth dry","Vermouth rouge","Vermouth blanc"]],
+    ["Amers","liquid",["Bitter (type Campari)","Gentiane"]],
+    ["Amers concentrés","dash",["Aromatic bitters","Bitters orange","Amargo chuncho"]],
+    ["Liqueurs","liquid",["Maraschino","Triple sec","Curaçao orange","Curaçao bleu","Liqueur de café","Liqueur de pêche","Liqueur de fruit de la passion","Velvet falernum"]],
+    ["Crèmes","liquid",["Crème de violette","Crème de mûre","Crème de noix de coco"]]
+  ]},
+  frigo:{label:"Réfrigérateur",groups:[
+    ["Jus","liquid",["Jus de citron","Jus de citron vert","Jus d'orange","Jus d'ananas","Jus de pamplemousse","Jus de tomate","Jus de gingembre frais","Jus de pomme trouble"]],
+    ["Nectars","liquid",["Nectar de cranberry","Nectar de pêche blanche","Nectar de fraise","Nectar de framboise"]],
+    ["Purées","liquid",["Purée de fruit de la passion","Purée de pêche blanche","Purée de fraise","Purée de framboise"]],
+    ["Sodas et eaux","liquid",["Eau gazeuse","Ginger beer","Ginger ale","Soda au pamplemousse"]],
+    ["Vins et effervescents","liquid",["Champagne","Prosecco","Vin blanc effervescent","Sherry fino"]],
+    ["Autres","liquid",["Blanc d'œuf","Aquafaba","Consommé de bœuf","Saumure d'olive"]]
+  ]},
+  plan:{label:"Plan de travail",groups:[
+    ["Sirops","liquid",["Sirop de sucre","Sirop de miel","Sirop de vanille","Sirop d'orgeat","Sirop d'agave","Sirop de grenadine"]],
+    ["Sucres","mixed",[["Sucre en poudre","spoon"],["Sucre vanillé","spoon"],["Sucre brun en morceau","lump"],["Sucre blanc en morceau","lump"]]],
+    ["Herbes","leaf",["Menthe","Basilic"]],
+    ["Épices et condiments","mixed",[["Gingembre frais","fruit"],["Sel au céleri","pinch"],["Tabasco","drop"],["Sauce anglaise","dash"],["Sel fin","rim"]]],
+    ["Fruits","mixed",[["Citron jaune","fruit"],["Citron vert","lime"],["Orange","fruit"],["Pamplemousse","fruit"],["Ananas","fruit"],["Fruit de la passion","fruit"],["Mûres","fruit"],["Pêche blanche","fruit"],["Fraise","fruit"],["Framboise","fruit"],["Pomme","fruit"]]]
+  ]},
+  cafe:{label:"Machine à café",groups:[["Café","liquid",["Café espresso"]]]},
+  glace:{label:"Bac à glace",groups:[["Glace","ice",["Glace en cubes","Glace pilée"]]]},
+  verres:{label:"Placard à verres",groups:[
+    ["Les incontournables","glass",["Shot","Mule","Rocks","Highball","Dégustation","Nick & Nora","Coupe","Martini","Vin","Flûte"]],
+    ["Les complémentaires","glass",["Digestif","Absinthe","Toddy","Punch","Hurricane","Copa","Bière","Julep","Tiki","Fantaisie","Bowl"]]
+  ]},
+  garnitures:{label:"Bac à garnitures",groups:[
+    ["Zestes","garnish",["Zeste de citron","Long zeste de citron","Zeste de citron vert","Zeste d'orange"]],
+    ["Tranches et quartiers","garnish",["Tranche de citron","Demi-tranche de citron","Tranche de citron vert","Demi-tranche de citron vert","Quartier de citron vert","Demi-tranche d'orange","Demi-tranche de pamplemousse","Quartier d'ananas"]],
+    ["Fruits et autres","garnish",["Cerise à l'eau-de-vie","Olive verte","Oignon grelot","Mûres (garniture)","Demi-fruit de la passion","Tête de menthe","Tête de basilic","Lamelle de gingembre","Grains de café","Branche de céleri"]]
+  ]},
+  outils:{label:"Rail à outils",groups:[
+    ["Pour mélanger","tool",["Shaker Boston","Shaker continental","Shaker trois pièces","Timbale","Verre à mélange","Cuillère de bar","Swizzle stick","Pilon","Blender"]],
+    ["Pour doser et filtrer","tool",["Doseur","Passoire à cocktail","Passoire à julep","Passoire fine","Bec verseur","Squeeze bottle"]],
+    ["Pour préparer","tool",["Presse-agrumes","Éplucheur","Tapis de bar"]]
+  ]},
+  service:{label:"Pot de service",groups:[["Accessoires","acc",["Paille courte","Paille","Agitateur","Pique"]]]}
+};
+const ITEMS={};
+for(const [zid,z] of Object.entries(ZONES)){
+  for(const [gname,kind,list] of z.groups){
+    for(const e of list){
+      const n=Array.isArray(e)?e[0]:e, k=Array.isArray(e)?e[1]:kind;
+      ITEMS[n]={n,zone:zid,group:gname,kind:k};
+    }
+  }
+}
+
+const COLOR={"Gin":"#DCE8EE","Vodka":"#E3ECEF","Vodka vanille":"#EFE0BE","Ron cubain 3 años":"#E7C277","Ron cubain":"#EDE6CE","Rhum blanc":"#EEF0EC","Rhum agricole blanc":"#EDEFEA","Rhum agricole ambré":"#C9893A","Rhum vieux agricole":"#9C5A1E","Rhum vieux jamaïcain":"#8A4B18","Rum ambré":"#B8722C","Black rum":"#3B200E","Tequila":"#EEE6C8","Tequila blanco 100 % agave":"#F0EBD6","Whiskey américain":"#B8761F","Bourbon":"#AE6A1A","Rye whiskey":"#B06E22","Scotch whisky":"#C08A3A","Blend whisky":"#C6913F","Whisky tourbé":"#A8742E","Cognac":"#9E5418","Calvados":"#C47A2C","Cachaça":"#EEF0E6","Pisco":"#F1EEDF","Vermouth dry":"#E9E4B0","Vermouth rouge":"#7A1F17","Vermouth blanc":"#EFE7C3","Bitter (type Campari)":"#C8102E","Gentiane":"#E5C34A","Amargo chuncho":"#5A2A10","Aromatic bitters":"#6B1D0F","Bitters orange":"#D16A1C","Maraschino":"#F3F1EA","Triple sec":"#F6F0DC","Curaçao orange":"#E58A1F","Curaçao bleu":"#1E7FD0","Liqueur de café":"#2A160B","Liqueur de pêche":"#F2A76A","Liqueur de fruit de la passion":"#F5C23C","Velvet falernum":"#EFE0B0","Crème de violette":"#7D5AB8","Crème de mûre":"#4A1030","Crème de noix de coco":"#F7F3EA","Jus de citron":"#F4EC9C","Jus de citron vert":"#D7EA9A","Jus d'orange":"#F7A531","Jus d'ananas":"#F6D65A","Jus de pamplemousse":"#F29B8A","Jus de tomate":"#C0301E","Jus de gingembre frais":"#E8D38A","Jus de pomme trouble":"#E2C27A","Nectar de cranberry":"#B3123A","Nectar de pêche blanche":"#F6C39A","Nectar de fraise":"#E33A4F","Nectar de framboise":"#D1245A","Purée de fruit de la passion":"#F2B22A","Purée de pêche blanche":"#F4BE90","Purée de fraise":"#D92A44","Purée de framboise":"#C21E52","Eau gazeuse":"#E6F4FA","Ginger beer":"#E8D49A","Ginger ale":"#E9C27C","Soda au pamplemousse":"#F4C7B8","Champagne":"#F3E3A2","Prosecco":"#F1E6A8","Vin blanc effervescent":"#EFE4A4","Sherry fino":"#E8CF86","Blanc d'œuf":"#F4F1E6","Aquafaba":"#EFE6CF","Consommé de bœuf":"#7A4A24","Saumure d'olive":"#C9CFA0","Sirop de sucre":"#FBF7EE","Sirop de miel":"#E2A52B","Sirop de vanille":"#EFD9A6","Sirop d'orgeat":"#F3EAD8","Sirop d'agave":"#E8C46A","Sirop de grenadine":"#B5122B","Café espresso":"#3B2414","Sauce anglaise":"#3A1F12","Tabasco":"#C62A14"};
+const colorOf=n=>COLOR[n]||"#D9B26A";
+
+/* =========================================================
+   LES 36 COCKTAILS DU SOCLE (fiches techniques)
+   ========================================================= */
+// ingrédient : [nom ou liste de noms acceptés, quantité, unité, phase, {min,max}]
+// phase : b = base, p = à piler, t = complément après passage, f = versé à la fin sans mélanger
+const BRUNE_OF=["Whiskey américain","Bourbon","Rye whiskey","Scotch whisky","Cognac","Rhum vieux agricole","Rhum vieux jamaïcain"];
+const US_WHISKEY=["Whiskey américain","Bourbon","Rye whiskey"];
+const TEQ=["Tequila","Tequila blanco 100 % agave"];
+function R(name,order,glass,svc,m,ing,gar,acc,o){return Object.assign({name,order,glass,svc,m,ing:ing.map(normIng),gar:gar||[],acc:acc||[]},o||{})}
+function normIng(t){
+  if(t.alts)return {alts:t.alts.map(a=>({n:a[0],q:a[1],u:a[2]||"ml"})),ph:t.ph||"b"};
+  const names=Array.isArray(t[0])?t[0]:[t[0]];
+  const u=t[2]||"ml";
+  return {alts:names.map(n=>({n,q:t[1],u})),ph:t[3]||"b",min:t[4]&&t[4].min,max:t[4]&&t[4].max};
+}
+const SPECS=[
+ R("Aviation","Aviation","Nick & Nora","sans","shaker",[["Jus de citron",10],["Maraschino",15],["Crème de violette",5],["Gin",40]],["Cerise à l'eau-de-vie"]),
+ R("Bamboo","Bamboo","Nick & Nora","sans","melange",[["Sherry fino",35],["Vermouth dry",35],["Bitters orange",2,"trait"]],["Zeste de citron"]),
+ R("Bramble","Bramble","Rocks","pilee","direct",[["Sirop de sucre",5],["Jus de citron",15],["Gin",40],["Crème de mûre",10,"ml","f"]],["Demi-tranche de citron","Mûres (garniture)"],["Paille courte"],{stir:true}),
+ R("Caipirinha","Caipirinha","Rocks","pilee","direct",[["Citron vert",1,"demi","p"],["Sucre en poudre",1,"bs","p"],["Cachaça",40]],[],["Paille courte"],{stir:true,noGar:true}),
+ R("Cosmopolitan","Cosmopolitan","Coupe","sans","shaker",[["Jus de citron vert",5],["Nectar de cranberry",20],["Triple sec",15],["Vodka",30]],["Zeste de citron vert"]),
+ R("Daiquiri","Daiquiri","Coupe","sans","shaker",[["Sucre en poudre",1,"bs"],["Jus de citron vert",20],[["Ron cubain 3 años","Ron cubain"],40]],[],[],{noGar:true}),
+ R("Dry Martini","Dry Martini","Martini","sans","melange",[["Vermouth dry",15],["Gin",55]],[["Olive verte","Zeste de citron"]]),
+ R("Espresso Martini","Espresso Martini","Coupe","sans","shaker",[["Sirop de sucre",5],["Café espresso",25],["Liqueur de café",10],["Vodka",30]],["Grains de café"]),
+ R("Gin Basil Smash","Gin Basil Smash","Rocks","cubes","shaker",[["Sirop de sucre",15],["Jus de citron",20],["Gin",50],["Basilic",10,"feuille"]],["Tête de basilic"]),
+ R("Manhattan","Manhattan","Nick & Nora","sans","melange",[["Aromatic bitters",2,"trait"],["Vermouth rouge",20],[US_WHISKEY,50]],["Cerise à l'eau-de-vie"]),
+ R("Margarita","Margarita","Coupe","sans","shaker",[["Jus de citron vert",10],["Triple sec",20],[TEQ,40]],[],[],{rim:true,noGar:true}),
+ R("Mint Julep","Mint Julep","Julep","pilee","direct",[["Menthe",10,"feuille","p"],["Sucre en poudre",2,"bs","p"],[["Cognac","Whiskey américain","Bourbon"],50]],["Tête de menthe"],["Paille courte"],{stir:true}),
+ R("Negroni","Negroni","Rocks","cubes","direct",[["Vermouth rouge",30],["Bitter (type Campari)",30],["Gin",30]],["Demi-tranche d'orange"],[],{stir:true}),
+ R("Old-Fashioned","Old-Fashioned","Rocks","cubes","direct",[["Sucre brun en morceau",1,"morceau","p"],["Aromatic bitters",2,"trait","p"],[BRUNE_OF,50]],["Zeste d'orange","Cerise à l'eau-de-vie"],[],{stir:true}),
+ R("Penicillin","Penicillin","Rocks","cubes","shaker",[["Jus de citron",20],["Sirop de miel",10],["Jus de gingembre frais",10],["Blend whisky",40],["Whisky tourbé",10,"ml","f"]],["Lamelle de gingembre"]),
+ R("Pornstar Martini","Pornstar Martini","Coupe","sans","shaker",[{alts:[["Sirop de vanille",10,"ml"],["Sucre vanillé",1,"bs"]]},["Purée de fruit de la passion",30],["Liqueur de fruit de la passion",20],["Vodka vanille",30]],["Demi-fruit de la passion"],[],{side:true}),
+ R("Sidecar","Sidecar","Coupe","sans","shaker",[["Jus de citron",10],["Triple sec",20],["Cognac",40]],[],[],{noGar:true}),
+ R("Sour","Whiskey Sour","Rocks","cubes","shaker",[["Sucre en poudre",1,"bs"],["Jus de citron",20],[["Blanc d'œuf","Aquafaba"],20],[US_WHISKEY,50]],["Cerise à l'eau-de-vie"],[],{dry:true}),
+ R("Americano","Americano","Highball","cubes","direct",[["Vermouth rouge",20],["Bitter (type Campari)",50],["Eau gazeuse",50]],["Demi-tranche d'orange","Demi-tranche de citron"],[],{stir:true}),
+ R("Bellini","Bellini","Flûte","sans","direct",[[["Nectar de pêche blanche","Purée de pêche blanche"],40],["Champagne",80]],[],[],{stir:true,noGar:true}),
+ R("Bloody Mary","Bloody Mary","Highball","cubes","direct",[["Sel au céleri",1,"pincee","b",{min:1,max:2}],["Tabasco",2,"goutte","b",{min:1,max:4}],["Sauce anglaise",1,"trait","b",{min:1,max:2}],["Jus de citron",10],["Vodka",40],["Jus de tomate",70]],["Demi-tranche de citron"],["Agitateur"],{stir:true,garOpt:["Branche de céleri"]}),
+ R("Champagne Cocktail","Champagne Cocktail","Flûte","sans","direct",[["Sucre blanc en morceau",1,"morceau"],["Aromatic bitters",1,"trait"],["Cognac",10],["Champagne",110]],["Zeste de citron"]),
+ R("Dark and Stormy","Dark and Stormy","Highball","cubes","direct",[["Jus de citron vert",15],["Ginger beer",100],["Black rum",40,"ml","f"]],["Quartier de citron vert"],["Agitateur"],{stir:true}),
+ R("Fizz","Gin Fizz","Highball","cubes","shaker",[["Sirop de sucre",10],["Jus de citron",20],["Gin",40],["Eau gazeuse",50,"ml","t"]],["Tranche de citron"],[],{stirTop:true}),
+ R("French 75","French 75","Flûte","sans","shaker",[["Sirop de sucre",10],["Jus de citron",20],["Gin",40],["Champagne",50,"ml","t"]],["Zeste de citron"],[],{stirTop:true}),
+ R("Horse's Neck","Horse's Neck","Highball","cubes","direct",[["Aromatic bitters",3,"trait"],["Cognac",40],["Ginger ale",100]],["Long zeste de citron"],[],{stir:true}),
+ R("Mai Tai","Mai Tai","Rocks","pilee","shaker",[["Jus de citron vert",25],["Sirop d'orgeat",15],["Curaçao orange",15],["Rhum vieux agricole",25],["Rhum vieux jamaïcain",25]],["Demi-tranche de citron vert","Tête de menthe"],["Paille courte"]),
+ R("Mojito","Mojito","Highball","cubes","direct",[["Menthe",10,"feuille","p"],["Sucre en poudre",1,"bs","p"],["Jus de citron vert",20],[["Ron cubain","Ron cubain 3 años"],50],["Eau gazeuse",50]],["Tranche de citron vert","Tête de menthe"],["Paille"],{stir:true}),
+ R("Moscow Mule","Moscow Mule","Mule","cubes","direct",[["Jus de citron vert",15],["Vodka",40],["Ginger beer",100]],["Tranche de citron vert"],[],{stir:true}),
+ R("Paloma","Paloma","Highball","cubes","direct",[["Jus de pamplemousse",50],["Sirop d'agave",10],["Jus de citron vert",10],[TEQ,40],["Eau gazeuse",50]],["Demi-tranche de pamplemousse"],[],{stir:true,rim:true}),
+ R("Piña Colada","Piña Colada","Highball","cubes","shaker",[["Crème de noix de coco",20],["Jus d'ananas",60],["Rhum blanc",40]],["Quartier d'ananas","Cerise à l'eau-de-vie"]),
+ R("Planter's Punch","Planter's Punch","Highball","cubes","direct",[["Aromatic bitters",2,"trait"],["Jus d'orange",40],["Jus d'ananas",40],["Rhum agricole blanc",40],["Rhum agricole ambré",1,"trait","f"]],["Quartier d'ananas","Cerise à l'eau-de-vie"],["Agitateur"],{stir:true}),
+ R("Rum Swizzle","Rum Swizzle","Highball","pilee","direct",[["Sirop de sucre",20],["Jus de citron vert",30],["Velvet falernum",20],["Rum ambré",50],["Aromatic bitters",2,"trait"]],["Zeste d'orange","Tête de menthe"],["Paille"],{stir:true}),
+ R("Sex on the Beach","Sex on the Beach","Highball","cubes","shaker",[["Jus d'orange",40],["Nectar de cranberry",40],["Liqueur de pêche",10],["Vodka",40]],["Demi-tranche d'orange"]),
+ R("Spritz","Spritz au bitter","Vin","cubes","direct",[["Bitter (type Campari)",50],[["Prosecco","Vin blanc effervescent"],60],["Eau gazeuse",20]],[["Demi-tranche d'orange","Demi-tranche de citron","Tranche de citron","Zeste d'orange"]],[],{stir:true}),
+ R("Tequila Sunrise","Tequila Sunrise","Highball","cubes","direct",[["Jus d'orange",80],[TEQ,40],["Sirop de grenadine",1,"trait","f"]],["Demi-tranche d'orange","Cerise à l'eau-de-vie"],["Agitateur"],{stir:true})
+];
+
+/* =========================================================
+   VERRERIE : formes et contenances
+   ========================================================= */
+const SHAPES={
+ coupe:{inner:"M10 22H90C90 50 72 64 50 64C28 64 10 50 10 22Z",top:22,bot:64,x1:10,x2:90,extra:"M50 64V116M32 120H68"},
+ martini:{inner:"M8 20H92L50 68Z",top:20,bot:68,x1:8,x2:92,extra:"M50 68V116M32 120H68"},
+ nick:{inner:"M20 16H80C80 50 68 68 50 68C32 68 20 50 20 16Z",top:16,bot:68,x1:20,x2:80,extra:"M50 68V116M32 120H68"},
+ flute:{inner:"M38 6H62L61 70C61 80 56 86 50 86C44 86 39 80 39 70Z",top:6,bot:86,x1:38,x2:62,extra:"M50 86V116M36 120H64"},
+ vin:{inner:"M24 12H76C78 52 66 74 50 74C34 74 22 52 24 12Z",top:12,bot:74,x1:24,x2:76,extra:"M50 74V116M32 120H68"},
+ small:{inner:"M30 30H70C71 60 62 76 50 76C38 76 29 60 30 30Z",top:30,bot:76,x1:30,x2:70,extra:"M50 76V116M36 120H64"},
+ balloon:{inner:"M30 40C14 58 22 92 50 92C78 92 86 58 70 40Z",top:40,bot:92,x1:30,x2:70,extra:"M50 92V114M34 118H66"},
+ rocks:{inner:"M16 54H84L80 120H20Z",top:54,bot:120,x1:16,x2:84,extra:""},
+ highball:{inner:"M30 8H70L67 122H33Z",top:8,bot:122,x1:30,x2:70,extra:""},
+ hurricane:{inner:"M30 8H70C70 40 60 50 60 66C60 82 70 92 66 110H34C30 92 40 82 40 66C40 50 30 40 30 8Z",top:8,bot:110,x1:30,x2:70,extra:"M50 110V118M38 122H62"},
+ julep:{inner:"M24 30H76L72 120H28Z",top:30,bot:120,x1:24,x2:76,extra:"M25 44H75M27 108H73",metal:"#B8C0C4"},
+ mule:{inner:"M18 36H76V110Q76 122 64 122H30Q18 122 18 110Z",top:36,bot:122,x1:18,x2:76,extra:"M76 50H86Q92 50 92 58V84Q92 92 86 92H76",metal:"#C98B5A"},
+ mug:{inner:"M20 40H74V112Q74 122 64 122H30Q20 122 20 112Z",top:40,bot:122,x1:20,x2:74,extra:"M74 54H84Q90 54 90 62V82Q90 90 84 90H74"},
+ shot:{inner:"M34 80H66L62 122H38Z",top:80,bot:122,x1:34,x2:66,extra:""},
+ bowl:{inner:"M6 56H94C94 100 72 120 50 120C28 120 6 100 6 56Z",top:56,bot:120,x1:6,x2:94,extra:""},
+ tiki:{inner:"M28 14H72L70 122H30Z",top:14,bot:122,x1:28,x2:72,extra:"M36 40h8M56 40h8M40 60h20",metal:"#9C6B3A"},
+ biere:{inner:"M30 10C26 40 38 60 36 92L34 122H66L64 92C62 60 74 40 70 10Z",top:10,bot:122,x1:30,x2:70,extra:""}
+};
+const GLASS={"Shot":["shot",50],"Mule":["mule",400],"Rocks":["rocks",300],"Highball":["highball",350],"Dégustation":["small",150],"Nick & Nora":["nick",150],"Coupe":["coupe",180],"Martini":["martini",180],"Vin":["vin",400],"Flûte":["flute",180],
+ "Digestif":["balloon",250],"Absinthe":["small",200],"Toddy":["mug",300],"Punch":["mug",300],"Hurricane":["hurricane",450],"Copa":["vin",600],"Bière":["biere",500],"Julep":["julep",350],"Tiki":["tiki",450],"Fantaisie":["coupe",200],"Bowl":["bowl",1500]};
+
+/* =========================================================
+   ÉTAT DE LA PARTIE
+   ========================================================= */
+const store={get(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let STATS=store.get("cds:stats")||{cash:0,served:0,perfect:0,lost:0,best:0};
+let streak=0;
+let G=null, uid=0, hand=null, holdT=null, recent=[];
+const FACES=["🧔","👩","👨‍🦰","👵","🧑‍🎤","👩‍🦱","🧑","👨‍🦳","👱‍♀️","🧕","👨‍🦲","🧑‍🦰"];
+const PHRASES=["Un {n}, s'il vous plaît !","Je prendrai un {n}.","Vous me faites un {n} ?","Un {n}, bien frais !","Bonsoir ! Un {n}, avec plaisir."];
+const PRICE=12;
+
+const STIR_TOOLS=["Cuillère de bar","Swizzle stick"];
+const SHAKERS=["Shaker Boston","Shaker continental","Shaker trois pièces"];
+const has=t=>G.tools.includes(t);
+const hasAny=list=>list.some(has);
+
+function newOrder(){
+  let pool=SPECS.filter(s=>!recent.includes(s.name));
+  const spec=pool[Math.floor(Math.random()*pool.length)];
+  recent.push(spec.name);if(recent.length>8)recent.shift();
+  G={order:spec,start:Date.now(),hint:false,log:[],glass:null,side:null,vessel:null,tools:[],gar:[],acc:[],first:null,done:false};
+  hand=null;
+  document.getElementById("face").textContent=FACES[Math.floor(Math.random()*FACES.length)];
+  document.getElementById("order").textContent=PHRASES[Math.floor(Math.random()*PHRASES.length)].replace("{n}",spec.order);
+  closeHand();closeSheet();
+  renderAll();
+}
+function log(e){e.i=G.log.length;G.log.push(e);}
+function volume(c){let v=0;for(const k in c){const x=c[k];v+=(x.ml||0)+(x.trait||0)*0.8+(x.goutte||0)*0.1+(x.bs||0)*3+(x.morceau||0)*2+(x.demi||0)*10+(x.feuille||0)*0.3+(x.pincee||0)*0.2}return v}
+function addQty(c,n,u,q){c[n]=c[n]||{};c[n][u]=(c[n][u]||0)+q}
+function present(c,n){return !!c[n]&&Object.values(c[n]).some(v=>v>0)}
+
+/* =========================================================
+   ACTIONS DU BARMAN
+   ========================================================= */
+const A={
+  pickGlass(n){
+    if(G.glass&&n==="Shot"&&G.glass.type!=="Shot"){
+      G.side={type:"Shot",contents:{}};log({t:"side"});toast("Verre shot posé à côté du cocktail.");return;
+    }
+    const replacing=!!G.glass;
+    G.glass={type:n,dirty:Math.random()<0.3,checked:false,chilled:false,ice:null,water:false,contents:{},rim:false};
+    G.first=null;G.gar=[];
+    log({t:"glass",n});
+    toast(replacing?"Nouveau verre "+n+" posé sur le comptoir.":"Verre "+n+" posé sur le comptoir.");
+  },
+  mirer(){
+    const g=G.glass;g.checked=true;log({t:"mirer"});
+    toast(g.dirty?"Traces de doigts et de calcaire ! Ce verre est sale.":"Verre impeccable, rien à signaler.",g.dirty);
+  },
+  changeGlass(){
+    const t=G.glass.type;
+    G.glass={type:t,dirty:Math.random()<0.1,checked:false,chilled:false,ice:null,water:false,contents:{},rim:false};
+    G.first=null;log({t:"change"});toast("Verre sale remplacé. Pensez à mirer le nouveau.");
+  },
+  ice(target,kind){
+    const k=kind==="Glace pilée"?"pilee":"cubes";
+    if(target==="glass"){G.glass.ice=k;log({t:"ice",target,k});toast(kind+" dans le verre.");}
+    else if(target==="vessel"){G.vessel.ice=true;G.vessel.water=true;log({t:"ice",target,k});toast(G.vessel.kind==="shaker"?"Grande timbale remplie de glace.":"Verre à mélange rempli de glace.");}
+  },
+  chillGlass(){G.glass.chilled=true;G.glass.water=true;log({t:"chillG"});toast("Verre rafraîchi à la cuillère de bar.");},
+  drainGlass(){G.glass.water=false;log({t:"drainG"});toast("Verre égoutté.");},
+  removeIce(){G.glass.ice=null;G.glass.water=false;log({t:"unice"});toast("Glace retirée du verre.");},
+  rim(){
+    if(volume(G.glass.contents)>0){toast("Trop tard : on givre le verre avant de verser.",true);return}
+    G.glass.rim=true;log({t:"rim"});toast("Bord du verre givré au sel fin.");
+  },
+  add(target,n,u,q){
+    if(target==="glass"){
+      if(!G.first)G.first=snapGlass();
+      addQty(G.glass.contents,n,u,q);
+    }else if(target==="vessel"){
+      if(!G.vessel.first)G.vessel.first={ice:G.vessel.ice,chilled:G.vessel.chilled,water:G.vessel.water};
+      addQty(G.vessel.contents,n,u,q);
+    }else if(target==="side"){addQty(G.side.contents,n,u,q);}
+    log({t:"add",target,n,u,q});
+  },
+  pile(){log({t:"pile"});toast("Pilé au pilon.");},
+  stirGlass(){log({t:"stirG"});toast("Mélangé dans le verre.");},
+  toggleTool(n){
+    const i=G.tools.indexOf(n);
+    if(i>=0){
+      G.tools.splice(i,1);
+      if(G.vessel&&G.vessel.type===n){G.vessel=null;toast(n+" rangé (son contenu est perdu).");}
+      else toast(n+" rangé.");
+    }else{
+      G.tools.push(n);
+      if(SHAKERS.includes(n)||n==="Verre à mélange"){
+        if(G.vessel){const old=G.vessel.type;G.tools=G.tools.filter(t=>t!==old);toast(old+" rangé, "+n+" posé.");}
+        else toast(n+" posé sur le comptoir.");
+        G.vessel={type:n,kind:n==="Verre à mélange"?"melange":"shaker",ice:false,water:false,chilled:false,contents:{},first:null,strained:false};
+      }else toast(n+" posé sur le comptoir.");
+    }
+    log({t:"tool",n});
+  },
+  drainVessel(){G.vessel.water=false;log({t:"drainV"});toast(G.vessel.kind==="shaker"?"Grande timbale égouttée.":"Verre à mélange égoutté.");},
+  chillVessel(){G.vessel.chilled=true;G.vessel.water=true;log({t:"chillV"});toast("Verre à mélange rafraîchi.");},
+  shake(dur){log({t:"shake",dur,ice:G.vessel.ice,water:G.vessel.water});toast(G.vessel.ice?"Frappé "+dur.toFixed(1)+" s.":"Frappé sans glace (dry shake) "+dur.toFixed(1)+" s.");},
+  stirVessel(dur){log({t:"stirV",dur});toast("Mélangé "+Math.round(dur)+" s au verre à mélange.");},
+  strain(){
+    const v=G.vessel;
+    const pass=v.type==="Shaker trois pièces"||hasAny(["Passoire à cocktail","Passoire à julep"]);
+    if(!G.first)G.first=snapGlass();
+    for(const n in v.contents)for(const u in v.contents[n])addQty(G.glass.contents,n,u,v.contents[n][u]);
+    v.contents={};v.strained=true;
+    log({t:"strain",kind:v.kind,pass});
+    toast(pass?"Passé dans le verre.":"Passé… sans passoire ! Des éclats de glace tombent dans le verre.",!pass);
+  },
+  garnish(n){if(!G.glass){toast("Posez d'abord un verre.",true);return}if(G.gar.includes(n)){toast(n+" déjà sur le verre.");return}G.gar.push(n);log({t:"gar",n});toast(n+" ajouté en garniture.");},
+  accessory(n){if(!G.glass){toast("Posez d'abord un verre.",true);return}if(G.acc.includes(n)){toast(n+" déjà dans le verre.");return}G.acc.push(n);log({t:"acc",n});toast(n+" ajouté.");}
+};
+function snapGlass(){const g=G.glass;return{checked:g.checked,chilled:g.chilled,ice:g.ice,water:g.water}}
+
+/* =========================================================
+   ÉVALUATION DU COCKTAIL
+   ========================================================= */
+const UNIT={ml:["ml","ml"],trait:["trait","traits"],goutte:["goutte","gouttes"],bs:["bar spoon","bar spoons"],morceau:["morceau","morceaux"],feuille:["feuille","feuilles"],pincee:["pincée","pincées"],demi:["demi-citron","demi-citrons"]};
+const ul=(u,q)=>UNIT[u][q>1?1:0];
+const SVC={sans:"sans glace",cubes:"sur glace en cubes",pilee:"sur glace pilée"};
+const METHOD={shaker:"au shaker",melange:"au verre à mélange",direct:"directement au verre"};
+
+function evaluate(){
+  const S=G.order,fails=[],errs=[];
+  const g=G.glass;
+  if(!g){fails.push("Aucun verre servi au client.");return{fails,errs}}
+  const C=g.contents;
+  if(volume(C)===0){fails.push("Le verre est vide !");return{fails,errs}}
+  const used=new Set(), chosen=[];
+  S.ing.forEach((r,ri)=>{
+    const here=r.alts.filter(a=>present(C,a.n));
+    here.forEach(a=>used.add(a.n));
+    if(!here.length){fails.push("Il manque : "+r.alts.map(a=>a.n).join(" ou ")+".");chosen[ri]=null;return}
+    if(here.length>1)fails.push("Un seul parmi "+here.map(a=>a.n).join(" et ")+", pas les deux.");
+    const a=here[0];chosen[ri]=a;
+    const c=C[a.n];
+    if(a.u==="ml"){
+      const got=Math.round(c.ml||0);
+      if(!got){errs.push(a.n+" : il fallait verser "+a.q+" ml, pas compter en "+ul(Object.keys(c)[0]||"trait",2)+".")}
+      else if(Math.abs(got-a.q)>Math.max(3,a.q*0.1))errs.push(a.n+" : "+got+" ml au lieu de "+a.q+" ml.");
+    }else{
+      const got=Math.round(c[a.u]||0),min=r.min!=null?r.min:a.q,max=r.max!=null?r.max:a.q;
+      if((c.ml||0)>0)errs.push(a.n+" : se dose en "+ul(a.u,2)+", pas en versant ("+Math.round(c.ml)+" ml versés).");
+      else if(got<min||got>max)errs.push(a.n+" : "+got+" "+ul(a.u,got)+" au lieu de "+a.q+" "+ul(a.u,a.q)+".");
+    }
+  });
+  for(const n of Object.keys(C))if(present(C,n)&&!used.has(n))fails.push(n+" n'a rien à faire dans un "+S.name+".");
+
+  // Le verre
+  if(g.type!==S.glass)errs.push("Mauvais verre : "+g.type+" au lieu de "+S.glass+".");
+  const fc=G.first||{};
+  if(!fc.checked)errs.push("Verre non miré avant de l'utiliser.");
+  if(g.dirty)errs.push("Verre sale servi : le client a vu les traces !");
+  if(!fc.chilled)errs.push("Verre non rafraîchi avant de verser.");
+  if(fc.water)errs.push("Verre non égoutté : de l'eau de fonte est tombée dans le cocktail.");
+  const pileCk=S.ing.some(r=>r.ph==="p");
+  if(S.svc==="sans"){
+    if(fc.ice)errs.push("La glace n'a pas été retirée du verre avant de verser.");
+    else if(g.ice)errs.push("Servi avec de la glace : ce cocktail se sert sans glace.");
+  }else{
+    if(!g.ice)errs.push("Servi sans glace : il se sert "+SVC[S.svc]+".");
+    else if(g.ice!==S.svc)errs.push("Mauvaise glace : il se sert "+SVC[S.svc]+".");
+    if(!pileCk&&!fc.ice)errs.push("Le verre devait contenir sa glace avant de verser.");
+  }
+
+  // La méthode
+  const L=G.log;
+  const strains=L.filter(e=>e.t==="strain"),shakes=L.filter(e=>e.t==="shake"),stirsV=L.filter(e=>e.t==="stirV");
+  const lastStrain=strains.length?strains[strains.length-1].i:-1;
+  const reqOf=n=>S.ing.findIndex(r=>r.alts.some(a=>a.n===n));
+  const adds=L.filter(e=>e.t==="add");
+  if(S.m==="shaker"||S.m==="melange"){
+    if(!strains.length)errs.push("Ce cocktail se prépare "+METHOD[S.m]+", puis se passe dans le verre.");
+    else{
+      const s=strains[strains.length-1];
+      if(s.kind!==S.m)errs.push("Mauvaise méthode : ce cocktail se prépare "+METHOD[S.m]+".");
+      if(!s.pass)errs.push("Cocktail passé sans passoire.");
+      const direct=adds.filter(e=>e.target==="glass"&&reqOf(e.n)>=0&&S.ing[reqOf(e.n)].ph==="b");
+      if(direct.length)errs.push(direct[0].n+" a été versé directement dans le verre au lieu du "+(S.m==="shaker"?"shaker":"verre à mélange")+".");
+    }
+    if(S.m==="shaker"){
+      const iced=shakes.filter(e=>e.ice);
+      if(!iced.length)errs.push("Cocktail non frappé avec de la glace.");
+      else{
+        const sh=iced[iced.length-1];
+        if(sh.water)errs.push("Grande timbale non égouttée avant de frapper.");
+        if(sh.dur<7)errs.push("Frappé trop court : "+sh.dur.toFixed(1)+" s au lieu de 7 à 10 s.");
+        else if(sh.dur>10.5)errs.push("Frappé trop long : "+sh.dur.toFixed(1)+" s au lieu de 7 à 10 s.");
+        if(S.dry&&!shakes.some(e=>!e.ice&&e.i<sh.i))errs.push("Dry shake oublié : il fallait frapper une première fois sans glace.");
+      }
+    }else{
+      const vf=(G.vesselFirst||{});
+      if(!stirsV.length)errs.push("Cocktail non mélangé au verre à mélange.");
+      else{const d=stirsV[stirsV.length-1].dur;if(d<15)errs.push("Mélangé trop peu : "+Math.round(d)+" s au lieu de 15 à 20 s.");else if(d>21)errs.push("Mélangé trop longtemps : "+Math.round(d)+" s au lieu de 15 à 20 s.");}
+      if(!vf.ice)errs.push("Verre à mélange sans glace.");
+      else{if(!vf.chilled)errs.push("Verre à mélange non rafraîchi.");if(vf.water)errs.push("Verre à mélange non égoutté avant de verser.");}
+      if(shakes.length)errs.push("On ne frappe pas ce cocktail : il se mélange au verre à mélange.");
+    }
+  }else{
+    if(strains.length||shakes.length)errs.push("Pas de shaker ni de verre à mélange : ce cocktail se fait directement au verre.");
+  }
+
+  // Les étapes dans l'ordre
+  const piles=L.filter(e=>e.t==="pile");
+  if(pileCk){
+    if(!piles.length)errs.push("Il fallait piler "+S.ing.filter(r=>r.ph==="p").map(r=>r.alts[0].n.toLowerCase()).join(" et ")+" au pilon.");
+    else{
+      const p=piles[0].i;
+      const pAdds=adds.filter(e=>{const k=reqOf(e.n);return k>=0&&S.ing[k].ph==="p"});
+      if(pAdds.some(e=>e.i>p))errs.push("Il fallait piler après avoir mis les ingrédients à piler.");
+      const bAdds=adds.filter(e=>{const k=reqOf(e.n);return k>=0&&S.ing[k].ph==="b"});
+      if(bAdds.some(e=>e.i<p))errs.push("Il fallait piler avant de verser l'alcool.");
+    }
+  }
+  const stirG=L.filter(e=>e.t==="stirG");
+  const fAdds=adds.filter(e=>{const k=reqOf(e.n);return k>=0&&S.ing[k].ph==="f"});
+  const tAdds=adds.filter(e=>{const k=reqOf(e.n);return k>=0&&S.ing[k].ph==="t"});
+  const bAddsGlass=adds.filter(e=>{const k=reqOf(e.n);return k>=0&&S.ing[k].ph!=="f"});
+  const firstFloat=fAdds.length?fAdds[0].i:Infinity;
+  if(S.stir){
+    const lastB=bAddsGlass.length?bAddsGlass[bAddsGlass.length-1].i:-1;
+    if(!stirG.some(e=>e.i>lastB&&e.i<firstFloat))errs.push("Il fallait mélanger le cocktail dans le verre"+(fAdds.length?" avant d'ajouter "+fAdds[0].n.toLowerCase():"")+".");
+  }
+  tAdds.forEach(e=>{if(e.i<lastStrain)errs.push(e.n+" se verse après avoir passé le cocktail, pour compléter.")});
+  if(S.stirTop&&tAdds.length){const lt=tAdds[tAdds.length-1].i;if(!stirG.some(e=>e.i>lt))errs.push("Il fallait mélanger après avoir complété avec "+tAdds[0].n.toLowerCase()+".");}
+  if(fAdds.length){
+    const mixes=L.filter(e=>["stirG","strain","pile","shake","stirV"].includes(e.t));
+    const lastMixBefore=Math.max(-1,...mixes.filter(e=>e.i<fAdds[0].i).map(e=>e.i));
+    const otherAfter=adds.filter(e=>e.i>fAdds[0].i&&reqOf(e.n)>=0&&S.ing[reqOf(e.n)].ph!=="f");
+    if(otherAfter.length||lastMixBefore<0)errs.push(fAdds[0].n+" se verse en tout dernier.");
+    if(stirG.some(e=>e.i>fAdds[0].i))errs.push(fAdds[0].n+" se verse sans mélanger : il ne fallait plus remuer.");
+  }
+  // Ordre de la recette (du moins cher au plus cher)
+  const expected=S.ing.map((r,k)=>k).filter(k=>S.ing[k].ph==="b"&&chosen[k]);
+  const seen=[];adds.forEach(e=>{const k=reqOf(e.n);if(k>=0&&S.ing[k].ph==="b"&&!seen.includes(k))seen.push(k)});
+  const seq=seen.filter(k=>expected.includes(k));
+  if(seq.join()!==expected.filter(k=>seq.includes(k)).join())errs.push("Ordre de la recette non respecté : "+expected.map(k=>chosen[k].n).join(", puis ")+".");
+
+  // Finitions
+  const gar=G.gar.slice(),matched=new Set();
+  S.gar.forEach(req=>{
+    const opts=Array.isArray(req)?req:[req];
+    const hit=opts.find(o=>gar.includes(o));
+    if(hit)matched.add(hit);else errs.push("Garniture manquante : "+opts.join(" ou ").toLowerCase()+".");
+  });
+  const extraGar=gar.filter(x=>!matched.has(x)&&!(S.garOpt||[]).includes(x));
+  if(S.noGar&&gar.length)errs.push("Ce cocktail se sert sans garniture.");
+  else if(extraGar.length)errs.push("Garniture en trop : "+extraGar.join(", ").toLowerCase()+".");
+  S.acc.forEach(a=>{if(!G.acc.includes(a))errs.push("Il manque : "+a.toLowerCase()+".")});
+  if(S.rim&&!g.rim)errs.push("Verre non givré au sel fin.");
+  if(!S.rim&&g.rim)errs.push("Givrage au sel inutile pour ce cocktail.");
+  if(S.side){if(!G.side||!present(G.side.contents,"Champagne"))errs.push("Le champagne servi à part, en verre shot, a été oublié.");}
+  else if(G.side)errs.push("Verre shot posé à côté pour rien.");
+  if(G.hint)errs.push("Fiche technique consultée pendant le service.");
+  return{fails,errs};
+}
+
+/* =========================================================
+   RENDU
+   ========================================================= */
+const $=id=>document.getElementById(id);
+const euro=v=>(v<0?"−":"")+Math.abs(v).toFixed(2).replace(".",",")+" €";
+function mix(c,extra){
+  let r=0,gg=0,b=0,w=0;
+  const all=Object.assign({},c);if(extra&&extra.n){all[extra.n]=Object.assign({},all[extra.n]||{});all[extra.n].ml=(all[extra.n].ml||0)+extra.ml}
+  for(const n in all){const x=all[n];const wt=(x.ml||0)+(x.trait||0)*0.8+(x.bs||0)*2+(x.morceau||0)*2+(x.demi||0)*4+(x.feuille||0)*0.5+(x.goutte||0)*0.2+(x.pincee||0)*0.2;if(!wt)continue;
+    const col=COLOR[n]||(n==="Citron vert"?"#9CCB5A":n==="Menthe"||n==="Basilic"?"#3E8E3E":"#D9B26A");const h=parseInt(col.slice(1),16);r+=(h>>16)*wt;gg+=((h>>8)&255)*wt;b+=(h&255)*wt;w+=wt}
+  if(!w)return null;return "rgb("+Math.round(r/w)+","+Math.round(gg/w)+","+Math.round(b/w)+")";
+}
+function glassSVG(type,st,extra,cls){
+  const [shp,cap]=GLASS[type]||["rocks",300];const s=SHAPES[shp];const id="c"+(++uid);
+  const ml=volume(st.contents)+(extra?extra.ml:0);
+  const f=Math.min(1,ml/cap);const y=s.bot-(s.bot-s.top)*f;
+  const col=mix(st.contents,extra)||"#000";
+  const H=s.bot-s.top,cx=(s.x1+s.x2)/2;
+  let ice="";
+  if(st.ice==="cubes"){for(let k=0;k<5;k++){const yy=s.top+4+k*Math.min(12,H/6);const xx=cx-14+(k%2)*12;ice+='<rect x="'+xx+'" y="'+yy+'" width="15" height="13" rx="3" fill="rgba(225,244,252,.75)" stroke="rgba(170,215,232,.9)" stroke-width="1"/>'}}
+  else if(st.ice==="pilee"){for(let k=0;k<40;k++){const xx=s.x1+((k*37)%(s.x2-s.x1));const yy=s.top+3+((k*53)%Math.max(8,H*0.85));ice+='<circle cx="'+xx+'" cy="'+yy+'" r="3.2" fill="rgba(230,246,252,.85)"/>'}}
+  const metal=s.metal&&shp!=="tiki";
+  return '<svg viewBox="0 0 100 130" class="'+(cls||"gsvg")+'" aria-hidden="true"><defs><clipPath id="'+id+'"><path d="'+s.inner+'"/></clipPath></defs>'+
+    (metal?'<path d="'+s.inner+'" fill="'+s.metal+'"/>':'')+
+    '<g clip-path="url(#'+id+')">'+
+    (st.chilled?'<rect width="100" height="130" fill="rgba(215,238,250,.22)"/>':'')+
+    (f>0&&!metal?'<rect x="0" y="'+y.toFixed(1)+'" width="100" height="'+(131-y).toFixed(1)+'" fill="'+col+'" opacity=".88"/>':'')+
+    (metal?'':ice)+
+    (st.dirty&&st.checked?'<circle cx="'+(cx-10)+'" cy="'+(s.top+12)+'" r="6" fill="rgba(120,90,50,.55)"/><circle cx="'+(cx+12)+'" cy="'+(s.top+22)+'" r="4" fill="rgba(120,90,50,.5)"/><path d="M'+(cx-4)+' '+(s.top+30)+'q6 4 12 0" stroke="rgba(120,90,50,.6)" stroke-width="3" fill="none"/>':'')+
+    '</g><path d="'+s.inner+'" fill="none" stroke="'+(metal?"#5E676C":"var(--glass-line)")+'" stroke-width="2.2" stroke-linejoin="round"/>'+
+    (s.extra?'<path d="'+s.extra+'" fill="none" stroke="'+(metal?"#5E676C":"var(--glass-line)")+'" stroke-width="2.2" stroke-linecap="round"/>':'')+
+    (st.chilled?'<path d="'+s.inner+'" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="5" stroke-dasharray="1 5" stroke-linecap="round"/>':'')+
+    (st.rim?'<path d="M'+(s.x1+2)+' '+s.top+'H'+(s.x2-2)+'" stroke="#FFFFFF" stroke-width="5" stroke-dasharray="1.5 2.5" stroke-linecap="round"/>':'')+
+    '</svg>';
+}
+function vesselSVG(v,extra){
+  if(v.kind==="melange"){
+    return glassSVG("Highball",{contents:v.contents,ice:v.ice?"cubes":null,chilled:v.chilled},extra,"vsvg").replace('viewBox="0 0 100 130"','viewBox="0 0 100 130" data-v="m"');
+  }
+  const ml=volume(v.contents)+(extra?extra.ml:0);
+  return '<svg viewBox="0 0 100 160" class="vsvg" aria-hidden="true"><defs><linearGradient id="st'+(++uid)+'" x1="0" x2="1"><stop offset="0" stop-color="#7E878C"/><stop offset=".45" stop-color="#E4E9EC"/><stop offset="1" stop-color="#6E777C"/></linearGradient></defs>'+
+    '<path d="M24 8H76L70 152H30Z" fill="url(#st'+uid+')" stroke="#4C5458" stroke-width="2"/>'+
+    '<path d="M34 64H66L63 152H37Z" fill="rgba(255,255,255,.18)" stroke="#4C5458" stroke-width="1.5"/>'+
+    (v.ice?'<g>'+[0,1,2,3,4,5].map(k=>'<rect x="'+(32+(k%3)*12)+'" y="'+(14+Math.floor(k/3)*12)+'" width="10" height="10" rx="2" fill="rgba(225,244,252,.9)" stroke="#9CC9DA"/>').join("")+'</g>':'')+
+    (ml>0?'<text x="50" y="118" text-anchor="middle" font-family="Barlow Condensed,sans-serif" font-weight="700" font-size="16" fill="#1F1A15">'+Math.round(ml)+' ml</text>':'')+
+    '</svg>';
+}
+function bottleRow(){
+  const list=[];for(const g of ZONES.backbar.groups)for(const n of g[2])list.push(n);
+  const half=Math.ceil(list.length/2);
+  const make=arr=>arr.map((n,k)=>'<span class="btl" style="height:'+(30+((k*7)%16))+'px;background:'+colorOf(n)+'"></span>').join("");
+  $("shelf1").innerHTML=make(list.slice(0,half));$("shelf2").innerHTML=make(list.slice(half));
+}
+function renderHUD(){
+  $("cash").textContent=euro(STATS.cash);
+  $("till").classList.toggle("neg",STATS.cash<0);
+  $("streak").textContent=streak?"🔥 "+streak:"";
+}
+function renderWork(){
+  let h="";
+  const pend=pendingPour();
+  if(G.glass){
+    const g=G.glass;const ex=pend&&pend.target==="glass"?pend:null;
+    const st=[];if(g.checked)st.push(g.dirty?"sale !":"miré");if(g.chilled)st.push("rafraîchi");if(g.ice)st.push(g.ice==="pilee"?"glace pilée":"glaçons");if(g.water)st.push("eau de fonte");if(g.rim)st.push("givré");
+    h+='<div class="slot">'+glassSVG(g.type,g,ex)+'<span class="lbl">'+g.type+(G.gar.length||G.acc.length?" · "+G.gar.concat(G.acc).length+" déco":"")+'</span><span class="st">'+(st.join(", ")||"à mirer")+'</span></div>';
+  }else h+='<div class="slot"><div class="empty-slot">Prenez un verre dans le placard</div></div>';
+  if(G.vessel){
+    const v=G.vessel;const ex=pend&&pend.target==="vessel"?pend:null;
+    const st=[];if(v.ice)st.push(v.kind==="shaker"?"glace (grande timbale)":"glace");if(v.chilled)st.push("rafraîchi");if(v.water)st.push("eau");if(v.strained)st.push("passé");
+    h+='<div class="slot" id="vesselSlot">'+vesselSVG(v,ex)+'<span class="lbl">'+v.type+'</span><span class="st">'+(st.join(", ")||"vide")+'</span></div>';
+  }
+  if(G.side){const ex=pend&&pend.target==="side"?pend:null;h+='<div class="slot">'+glassSVG("Shot",{contents:G.side.contents},ex,"ssvg")+'<span class="lbl">Shot</span></div>'}
+  $("work").innerHTML=h;
+  const tl=G.tools.filter(t=>!(G.vessel&&G.vessel.type===t));
+  $("toolsOn").innerHTML=tl.map(t=>"<span>"+t+"</span>").join("");
+}
+function act(label,fn,dis,hint,cls){return{label,fn,dis,hint,cls}}
+function computeActions(){
+  const a=[];const g=G.glass,v=G.vessel;
+  const stirTool=hasAny(STIR_TOOLS);
+  if(g){
+    if(!g.checked)a.push(act("Mirer le verre",A.mirer));
+    if(g.checked&&g.dirty)a.push(act("Changer de verre",A.changeGlass));
+    if(g.ice&&!g.chilled)a.push(act("Rafraîchir le verre",A.chillGlass,!stirTool,"cuillère de bar"));
+    if(g.ice&&g.water)a.push(act("Égoutter le verre",A.drainGlass));
+    if(g.ice)a.push(act("Retirer la glace",A.removeIce));
+    if(volume(g.contents)>0){
+      a.push(act("Piler",A.pile,!has("Pilon"),"pilon"));
+      a.push(act("Mélanger dans le verre",A.stirGlass,!stirTool,"cuillère de bar"));
+    }
+  }
+  if(v){
+    if(v.kind==="melange"&&v.ice&&!v.chilled)a.push(act("Rafraîchir le verre à mélange",A.chillVessel,!stirTool,"cuillère de bar"));
+    if(v.ice&&v.water)a.push(act(v.kind==="shaker"?"Égoutter la grande timbale":"Égoutter le verre à mélange",A.drainVessel));
+    if(volume(v.contents)>0){
+      if(v.kind==="shaker")a.push(act("Maintenir pour frapper",null,false,"","hold-shake"));
+      else a.push(act("Maintenir pour mélanger",null,!stirTool,"cuillère de bar","hold-stir"));
+      a.push(act("Passer dans le verre",A.strain,!g,"posez un verre"));
+    }
+  }
+  return a;
+}
+function renderActions(){
+  const box=$("actions");box.innerHTML="";
+  const list=computeActions();
+  if(!list.length){box.innerHTML='<span class="none">'+(G.glass?"Ouvrez les placards pour continuer.":"Commencez par choisir le bon verre dans le placard.")+'</span>';return}
+  list.forEach(o=>{
+    const b=document.createElement("button");b.className="act";
+    b.innerHTML=o.label+(o.dis&&o.hint?" <small>("+o.hint+")</small>":"");
+    b.disabled=!!o.dis;
+    if(o.cls==="hold-shake"||o.cls==="hold-stir"){b.classList.add("hold");bindHold(b,o.cls)}
+    else b.addEventListener("click",()=>{o.fn();renderAll()});
+    box.appendChild(b);
+  });
+}
+function renderAll(){renderHUD();renderWork();renderActions();if(hand)renderHand()}
+
+/* ---------- Maintenir pour frapper / mélanger ---------- */
+function bindHold(btn,kind){
+  let t0=0,raf=0,on=false;
+  const base=btn.innerHTML;
+  const tick=()=>{const s=(performance.now()-t0)/1000;const shown=kind==="hold-stir"?s*2:s;
+    btn.innerHTML=(kind==="hold-shake"?"Frapper… ":"Mélanger… ")+shown.toFixed(1)+" s <small>("+(kind==="hold-shake"?"7 à 10 s":"15 à 20 s, chrono ×2")+")</small>";raf=requestAnimationFrame(tick)};
+  const start=e=>{if(on)return;e.preventDefault();on=true;try{btn.setPointerCapture(e.pointerId)}catch(_){}t0=performance.now();btn.classList.add("on");
+    const vs=$("vesselSlot");if(vs&&kind==="hold-shake")vs.firstChild.classList.add("shaking");tick()};
+  const stop=()=>{if(!on)return;on=false;cancelAnimationFrame(raf);btn.classList.remove("on");const s=(performance.now()-t0)/1000;
+    if(s<0.25){btn.innerHTML=base;return}
+    if(kind==="hold-shake")A.shake(s);else A.stirVessel(s*2);renderAll()};
+  btn.addEventListener("pointerdown",start);
+  ["pointerup","pointercancel","lostpointercapture"].forEach(ev=>btn.addEventListener(ev,stop));
+  btn.addEventListener("contextmenu",e=>e.preventDefault());
+}
+
+/* ---------- Les placards ---------- */
+let openZone=null;
+function openSheet(zid){
+  openZone=zid;const z=ZONES[zid];
+  $("sheetTitle").textContent=z.label;
+  let h="";
+  if(zid==="verres")h+='<p class="hint">Choisissez le verre de service. Un shot pris en plus se pose à côté du cocktail.</p>';
+  if(zid==="outils")h+='<p class="hint">Touchez un outil pour le poser sur le comptoir ou le ranger.</p>';
+  if(zid==="garnitures"||zid==="service")h+='<p class="hint">Touchez un élément pour l\'ajouter au verre.</p>';
+  for(const [gname,kind,list] of z.groups){
+    h+='<div class="grp">'+gname+'</div><div class="items">';
+    for(const e of list){
+      const n=Array.isArray(e)?e[0]:e;const it=ITEMS[n];
+      let pre="";
+      if(it.kind==="glass")pre=glassSVG(n,{contents:{}},null,"").replace('class=""','style="width:22px;height:28px"');
+      else if(["liquid","dash"].includes(it.kind))pre='<span class="dot" style="background:'+colorOf(n)+'"></span>';
+      const on=(it.kind==="tool"&&G.tools.includes(n))||(it.kind==="garnish"&&G.gar.includes(n))||(it.kind==="acc"&&G.acc.includes(n));
+      h+='<button class="item'+(on?" on":"")+'" data-n="'+n.replace(/"/g,"&quot;")+'">'+pre+'<span>'+n.replace(" (garniture)","")+'</span></button>';
+    }
+    h+='</div>';
+  }
+  $("sheetBody").innerHTML=h;
+  $("sheetBody").querySelectorAll(".item").forEach(b=>b.addEventListener("click",()=>pickItem(b.dataset.n)));
+  $("sheetBack").classList.add("open");
+}
+function closeSheet(){$("sheetBack").classList.remove("open");openZone=null}
+function pickItem(n){
+  const it=ITEMS[n];
+  if(it.kind==="glass"){A.pickGlass(n);closeSheet();renderAll();return}
+  if(it.kind==="tool"){A.toggleTool(n);openSheet("outils");renderAll();return}
+  if(it.kind==="garnish"){A.garnish(n);closeSheet();renderAll();return}
+  if(it.kind==="acc"){A.accessory(n);closeSheet();renderAll();return}
+  closeSheet();
+  if(!G.glass&&!G.vessel){toast("Posez d'abord un verre ou un shaker sur le comptoir.",true);return}
+  hand={n,kind:it.kind,target:defaultTarget(),poured:0};
+  renderHand();renderWork();
+}
+function defaultTarget(){if(G.vessel&&!G.vessel.strained&&!(hand&&hand.kind==="rim"))return "vessel";if(G.glass)return "glass";return G.vessel?"vessel":null}
+
+/* ---------- La main : verser ---------- */
+let pour=null;
+function pendingPour(){return pour?{target:hand.target,n:hand.n,ml:pour.ml}:null}
+function targets(){const t=[];if(G.glass)t.push(["glass","Verre"]);if(G.vessel)t.push(["vessel",G.vessel.kind==="shaker"?"Shaker":"Verre à mélange"]);if(G.side)t.push(["side","Shot"]);return t}
+function renderHand(){
+  const h=$("hand");const it=ITEMS[hand.n];
+  if(hand.target&&!targets().some(t=>t[0]===hand.target))hand.target=defaultTarget();
+  let ctr="";const tgtName=(targets().find(t=>t[0]===hand.target)||["",""])[1];
+  const k=hand.kind;
+  if(k==="liquid")ctr='<button class="pour" id="pourBtn">Maintenir pour verser<small>1,5 cl par seconde, dans : '+tgtName+'</small></button><button class="mini" data-u="trait">1 trait</button>';
+  else if(k==="dash")ctr='<button class="mini" data-u="trait">1 trait</button>';
+  else if(k==="drop")ctr='<button class="mini" data-u="goutte">1 goutte</button>';
+  else if(k==="pinch")ctr='<button class="mini" data-u="pincee">1 pincée</button>';
+  else if(k==="spoon")ctr='<button class="mini" data-u="bs">1 bar spoon</button>';
+  else if(k==="lump")ctr='<button class="mini" data-u="morceau">1 morceau</button>';
+  else if(k==="leaf")ctr='<button class="mini" data-u="feuille" data-q="1">+1 feuille</button><button class="mini" data-u="feuille" data-q="5">+5 feuilles</button>';
+  else if(k==="lime")ctr='<button class="mini" data-u="demi">½ citron vert en morceaux</button>';
+  else if(k==="fruit")ctr='<button class="mini" data-u="morceau">1 morceau</button>';
+  else if(k==="rim")ctr='<button class="mini" data-act="rim">Givrer le bord du verre</button><button class="mini" data-u="pincee">1 pincée dans le cocktail</button>';
+  else if(k==="ice")ctr='<button class="mini" data-act="ice">Remplir de glace</button>';
+  const cont=hand.target==="glass"?G.glass&&G.glass.contents:hand.target==="vessel"?G.vessel&&G.vessel.contents:G.side&&G.side.contents;
+  const c=cont&&cont[hand.n];
+  const tally=c?Object.entries(c).filter(([u,q])=>q>0).map(([u,q])=>(u==="ml"?Math.round(q):q)+" "+ul(u,q)).join(" + "):"";
+  const tg=targets();
+  h.innerHTML='<div class="top"><div><h3>'+hand.n+'</h3><div class="from">'+ZONES[it.zone].label+' · '+it.group+'</div></div><button class="mini" id="putBack" style="flex:none">Reposer</button></div>'+
+    (tg.length>1&&k!=="rim"?'<div class="targets">'+tg.map(t=>'<button data-t="'+t[0]+'" aria-pressed="'+(hand.target===t[0])+'">'+t[1]+'</button>').join("")+'</div>':'<div style="height:10px"></div>')+
+    '<div class="ctrls">'+ctr+'</div><div class="tally" id="tally">'+(tally?"Déjà dans le "+tgtName.toLowerCase()+" : "+tally:"Rien de cet ingrédient dans le "+tgtName.toLowerCase()+" pour l'instant.")+'</div>';
+  h.classList.add("open");
+  $("putBack").onclick=()=>{closeHand();renderAll()};
+  h.querySelectorAll(".targets button").forEach(b=>b.onclick=()=>{hand.target=b.dataset.t;renderHand()});
+  h.querySelectorAll(".mini[data-u]").forEach(b=>b.onclick=()=>{
+    if(!checkTarget())return;
+    A.add(hand.target,hand.n,b.dataset.u,+(b.dataset.q||1));renderAll()});
+  h.querySelectorAll(".mini[data-act]").forEach(b=>b.onclick=()=>{
+    if(b.dataset.act==="rim"){if(!G.glass){toast("Posez d'abord un verre.",true);return}A.rim();}
+    else{if(!checkTarget())return;if(hand.target==="side"){toast("Pas de glace dans le shot de champagne.",true);return}A.ice(hand.target,hand.n);closeHand();}
+    renderAll()});
+  const pb=$("pourBtn");if(pb)bindPour(pb);
+}
+function checkTarget(){
+  if(!hand.target){toast("Posez d'abord un verre ou un shaker.",true);return false}
+  if(hand.target==="vessel"&&G.vessel.strained){toast("Ce "+(G.vessel.kind==="shaker"?"shaker":"verre à mélange")+" a déjà été passé.",true);return false}
+  return true;
+}
+function closeHand(){hand=null;pour=null;$("hand").classList.remove("open")}
+function bindPour(btn){
+  let raf=0;
+  const tick=()=>{pour.ml=(performance.now()-pour.t0)/1000*15;btn.firstChild.textContent="Je verse… "+Math.round(pour.ml)+" ml";renderWork();raf=requestAnimationFrame(tick)};
+  const start=e=>{if(pour)return;e.preventDefault();if(!checkTarget())return;try{btn.setPointerCapture(e.pointerId)}catch(_){}pour={t0:performance.now(),ml:0};btn.classList.add("on");tick()};
+  const stop=()=>{if(!pour)return;cancelAnimationFrame(raf);const ml=Math.round((performance.now()-pour.t0)/1000*15);pour=null;btn.classList.remove("on");
+    if(ml>=1)A.add(hand.target,hand.n,"ml",ml);renderAll()};
+  btn.addEventListener("pointerdown",start);
+  ["pointerup","pointercancel","lostpointercapture"].forEach(ev=>btn.addEventListener(ev,stop));
+  btn.addEventListener("contextmenu",e=>e.preventDefault());
+}
+
+/* ---------- Toast ---------- */
+let toastT=0;
+function toast(msg,warn){const t=$("toast");t.textContent=msg;t.classList.toggle("warn",!!warn);t.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("on"),1900)}
+
+/* ---------- Sons (facultatifs) ---------- */
+let AC=null;
+function beep(freqs,type,dur,gap){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();freqs.forEach((f,k)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.0001,AC.currentTime+k*gap);g.gain.exponentialRampToValueAtTime(.18,AC.currentTime+k*gap+.01);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+k*gap+dur);o.connect(g).connect(AC.destination);o.start(AC.currentTime+k*gap);o.stop(AC.currentTime+k*gap+dur+.05)})}catch(e){}}
+
+/* ---------- Servir ---------- */
+function serve(){
+  closeHand();closeSheet();
+  const {fails,errs}=evaluate();
+  const secs=Math.round((Date.now()-G.start)/1000);
+  const r=$("result");r.className="screen open";
+  let html="",delta=0,tip=0,outcome;
+  if(fails.length){
+    outcome="fail";delta=-PRICE;streak=0;STATS.lost++;
+    r.classList.add("fail");
+    html='<div class="rcard"><p class="verdict">Le client est furieux</p><p>Ce n\'est pas un '+G.order.name+'. Il repart sans payer et exige d\'être remboursé.</p><p class="money neg">Caisse : '+euro(delta)+'</p></div>';
+    beep([196,147,110],"sawtooth",.45,.22);
+  }else if(errs.length){
+    outcome="ok";delta=PRICE;streak=0;STATS.served++;
+    r.classList.add("ok");
+    html='<div class="rcard"><p class="verdict">Client satisfait</p><p>C\'est bien un '+G.order.name+'. Il paie, mais ne laisse pas de pourboire.</p><p class="money pos">+ '+euro(PRICE)+'</p></div>';
+    beep([523,659],"triangle",.18,.12);
+  }else{
+    outcome="tip";streak++;STATS.served++;STATS.perfect++;STATS.best=Math.max(STATS.best,streak);
+    const speed=Math.max(0,Math.min(3,(150-secs)/30));
+    tip=Math.round((2+speed)*(1+0.25*Math.min(streak-1,4))*2)/2;
+    delta=PRICE+tip;
+    r.classList.add("tip");
+    html='<div class="sparkle"></div><div class="rcard"><p class="verdict">Service parfait !</p><p>Le client lève son verre et glisse un billet sous le sous-verre.</p><p class="money pos">+ '+euro(PRICE)+'</p><p class="money gold">Pourboire + '+euro(tip)+'</p>'+(streak>1?'<p style="font-family:var(--cond);font-size:18px;color:var(--brass-hi)">🔥 Série de '+streak+' cocktails parfaits</p>':'')+'</div>';
+    beep([1319,1568,2093,2637],"square",.12,.07);setTimeout(()=>beep([2637,3136],"triangle",.25,.1),380);
+  }
+  STATS.cash=Math.round((STATS.cash+delta)*100)/100;store.set("cds:stats",STATS);
+  html+='<div class="errs-title">'+(fails.length+errs.length?"Les erreurs commises ("+(fails.length+errs.length)+")":"Aucune erreur")+'</div><ul class="errs">'+
+    fails.map(x=>'<li class="f">'+x+'</li>').join("")+errs.map(x=>'<li>'+x+'</li>').join("")+
+    (fails.length+errs.length?'':'<li class="good">Bons ingrédients, bien dosés, préparés dans l\'ordre. Temps : '+Math.floor(secs/60)+' min '+String(secs%60).padStart(2,"0")+' s.</li>')+'</ul>'+
+    (outcome!=="tip"&&!G.hint?'<button class="b-ghost" id="seeFiche" style="margin-top:14px;border-radius:12px;padding:10px 0;font-family:var(--cond);font-weight:600;font-size:17px">Voir la fiche du '+G.order.name+'</button>':'')+
+    '<button class="big" id="nextBtn" style="margin-top:16px">Client suivant</button>';
+  r.innerHTML=html;
+  if(outcome==="fail"){
+    const words=["REMBOURSEZ-MOI !","C'EST QUOI ÇA ?!","CAISSE DANS LE ROUGE","INADMISSIBLE !","LE PATRON VA HURLER"];
+    words.forEach((w,k)=>{const s=document.createElement("div");s.className="scrawl";s.textContent=w;s.style.left=(4+((k*37)%60))+"%";s.style.top=(4+k*6)+"%";s.style.fontSize=(18+(k%3)*6)+"px";s.style.setProperty("--r",((k%2?1:-1)*(3+k))+"deg");s.style.transform="rotate("+((k%2?1:-1)*(3+k))+"deg)";r.appendChild(s)});
+    $("till").classList.remove("flash");void $("till").offsetWidth;$("till").classList.add("flash");
+  }
+  if(outcome==="tip")rainMoney(Math.min(36,10+Math.round(tip*4)));
+  renderHUD();
+  $("nextBtn").onclick=()=>{r.className="screen";r.innerHTML="";newOrder()};
+  const sf=$("seeFiche");if(sf)sf.onclick=()=>showFiche(true);
+}
+function rainMoney(n){
+  const r=$("result");
+  for(let k=0;k<n;k++){
+    const el=document.createElement("div");const bill=k%4===0;
+    el.className=bill?"bill":"coin";el.textContent=bill?"10 €":"€";
+    el.style.left=(Math.random()*90)+"%";el.style.animationDuration=(1.6+Math.random()*1.6)+"s";el.style.animationDelay=(Math.random()*0.9)+"s";
+    el.style.setProperty("--spin",(Math.random()>.5?"":"-")+(180+Math.random()*540)+"deg");
+    r.appendChild(el);
+  }
+}
+
+/* ---------- La fiche technique ---------- */
+function ficheHTML(S){
+  const ing=S.ing.map(r=>{const a=r.alts;const s=a.map(x=>(x.u==="ml"?x.q+" ml ":x.q+" "+ul(x.u,x.q)+" de ")+x.n.toLowerCase()).join(" ou ");
+    return "<li>"+s+(r.ph==="p"?" (à piler)":r.ph==="t"?" (pour compléter)":r.ph==="f"?" (à la fin, sans mélanger)":"")+"</li>"}).join("");
+  const gar=S.gar.length?S.gar.map(g=>Array.isArray(g)?g.join(" ou "):g).join(", "):"aucune";
+  return '<div class="card"><h2>'+S.name+'</h2><div class="meta">Verre '+S.glass+', '+SVC[S.svc]+', '+METHOD[S.m]+'</div><ol>'+ing+'</ol>'+
+    '<p><b>Garniture :</b> '+gar.replace(" (garniture)","")+'</p>'+(S.acc.length?'<p><b>Service :</b> '+S.acc.join(", ").toLowerCase()+'</p>':'')+
+    (S.rim?'<p><b>Givrage :</b> bord du verre au sel fin.</p>':'')+(S.dry?'<p><b>Technique :</b> dry shake, frapper sans glace puis avec glace.</p>':'')+
+    (S.side?'<p><b>À côté :</b> champagne servi en verre shot.</p>':'')+
+    (S.m==="shaker"?'<p>Frapper 7 à 10 s, puis passer.</p>':S.m==="melange"?'<p>Mélanger 15 à 20 s, puis passer.</p>':'')+'</div>';
+}
+function showFiche(after){
+  const f=$("fiche");f.className="screen open";
+  if(after||G.hint){f.innerHTML=ficheHTML(G.order)+'<div class="row2"><button class="b-light" id="fClose">Fermer</button></div>';$("fClose").onclick=()=>{f.className="screen"};return}
+  f.innerHTML='<div class="warn">Consulter la fiche technique pendant le service annule le pourboire de ce client.</div><div class="row2"><button class="b-ghost" id="fNo">Je m\'en souviens</button><button class="b-light" id="fYes">Voir la fiche</button></div>';
+  $("fNo").onclick=()=>{f.className="screen"};
+  $("fYes").onclick=()=>{G.hint=true;showFiche(true)};
+}
+
+/* ---------- Chrono ---------- */
+setInterval(()=>{if(!G)return;const s=Math.floor((Date.now()-G.start)/1000);$("timer").textContent=Math.floor(s/60)+":"+String(s%60).padStart(2,"0")},500);
+
+/* ---------- Démarrage ---------- */
+document.querySelectorAll("[data-zone]").forEach(b=>b.addEventListener("click",()=>{closeHand();renderWork();openSheet(b.dataset.zone)}));
+$("sheetClose").onclick=closeSheet;
+$("sheetBack").addEventListener("click",e=>{if(e.target.id==="sheetBack")closeSheet()});
+$("serveBtn").onclick=serve;
+$("restartBtn").onclick=()=>{const o=G.order,t=G.start,h=G.hint;G={order:o,start:t,hint:h,log:[],glass:null,side:null,vessel:null,tools:[],gar:[],acc:[],first:null};closeHand();renderAll();toast("Comptoir débarrassé, on recommence.")};
+$("ficheBtn").onclick=()=>showFiche(false);
+document.addEventListener("contextmenu",e=>{if(e.target.closest("button"))e.preventDefault()});
+function renderStart(){$("startStats").innerHTML='<div><b>'+euro(STATS.cash)+'</b>en caisse</div><div><b>'+STATS.perfect+'</b>parfaits</div><div><b>'+STATS.best+'</b>meilleure série</div>'}
+$("startBtn").onclick=()=>{$("start").className="screen";beep([440],"sine",.05,0);newOrder()};
+bottleRow();renderStart();
+
+/* Point d'accès pour les tests automatisés */
+window.__game={A,get G(){return G},set G(v){G=v},evaluate,SPECS,newOrder,ITEMS};
+</script>
+</body>
+</html>
